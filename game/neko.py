@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+
 import spyral
 import spyral.debug
 import pygame
 from random import randint, random
 import math
+
+splash_done = False
 
 def cargar_frases():
     archivo = open("frases_miau.txt", "r")
@@ -18,6 +21,7 @@ class RetroTexto(spyral.Sprite):
         scene = spyral.director.get_scene()
         spyral.Sprite.__init__(self, scene)
         self.image = spyral.Image("images/minivintage-frame.png")
+        self.layer = "fondo"
 
         font_path = "fonts/new-century-schoolbook-bi-1361846783.ttf"
         self.font = spyral.Font(font_path, 28, (0,0,0))
@@ -76,6 +80,7 @@ class Gato(spyral.Sprite):
     def __init__(self, scene):
         spyral.Sprite.__init__(self, scene)
         self.image = spyral.Image("images/mati2.png")
+        self.layer = "fondo"
 
         self.scale = 2
         self.pos = spyral.Vec2D(self.scene.size) / 2
@@ -326,6 +331,7 @@ class Juego(spyral.Scene):
     def __init__(self, activity=None, callback=None, *args, **kwargs):
         spyral.Scene.__init__(self)
         self.background = spyral.Image(size=self.size).fill((255,255,255))
+        self.layers = ["fondo", "frente"]
 
         if activity:
             self.activity = activity
@@ -335,9 +341,34 @@ class Juego(spyral.Scene):
 
         spyral.event.register("system.quit", spyral.director.pop)
 
+        self.taller = spyral.Sprite(self)
+        self.taller.layer = "frente"
+        self.taller.image = spyral.Image(filename="images/logo_labs.png")
+        self.taller.pos = (self.width - self.taller.width, self.height-30)
+        self.taller.scale = 1.3
+        self.taller.anchor = "midbottom"
+
+        self.taller2 = spyral.Sprite(self)
+        self.taller2.layer = "frente"
+        self.taller2.image = spyral.Image(filename="images/transformando.png")
+        self.taller2.pos = (self.taller2.width/2, self.height-self.taller.image.height)
+        self.taller2.anchor = "center"
+
+        spyral.event.register("director.scene.enter", self.blink)
+
         # le avisamos a la actividad que terminamos de cargar el juego
         if callback:
             callback()
 
-    def inducir_falla(self):
-        self.error = spyral.Sprite(self.game)
+    def blink(self):
+        global splash_done
+        if not splash_done:
+            delay = spyral.DelayAnimation(5)
+            moveout = spyral.Animation("y", spyral.easing.Linear(self.taller.y, self.height
+                                                                    + self.taller.height), duration=4)
+            self.taller.animate(delay + moveout)
+            moveout = spyral.Animation("y", spyral.easing.Linear(self.taller2.y, self.height 
+                                                                    + self.taller.height/2), duration=5)
+            self.taller2.animate(delay+moveout)
+            splash_done = True
+

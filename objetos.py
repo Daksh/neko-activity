@@ -3,6 +3,7 @@ import spyral.debug
 import pygame
 from random import randint, random
 
+
 def reset():
     scene = spyral.director.get_scene()
     for sprite in scene._sprites.copy():
@@ -12,7 +13,6 @@ def reset():
 def fps():
     scene = spyral.director.get_scene()
     scene.fps = spyral.debug.FPSSprite(scene, (255,0,0))
-
 
 
 class RetroTexto(spyral.Sprite):

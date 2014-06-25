@@ -13,6 +13,7 @@ import sugargame2.canvas
 import spyral
 
 import logging
+import traceback
 
 from sugar.graphics import style
 from sugar.graphics.toolbarbox import ToolbarBox
@@ -20,20 +21,28 @@ from sugar.activity.widgets import ActivityToolbarButton
 from sugar.graphics.toolbutton import ToolButton
 from sugar.graphics.radiotoolbutton import RadioToolButton
 from sugar.activity.widgets import StopButton
+from sugar.graphics.alert import NotifyAlert
 
-from terminal.interactiveconsole import GTKInterpreterConsole
-from pyvimwrapper.vimWrapper import VimWrapper
+from libraries.console.interactiveconsole import GTKInterpreterConsole
+from libraries.pyvimwrapper.vimWrapper import VimWrapper
 try:
     import gtksourceview2
 except ImportError:
     import platform
     if platform.machine()=='armv7l':
         from libraries.armv7l import gtksourceview2
+    elif platform.machine()=='i686':
+        from libraries.i686 import gtksourceview2
+    else:
+        gtksourceview2 = None
 from pango import FontDescription
 
 import game.neko
 
 JUEGO=game.neko
+
+def is_xo():
+    return os.path.exists('/sys/power/olpc-pm')
 
 class Activity(sugar.activity.activity.Activity):
     def __init__(self, handle):
@@ -51,7 +60,11 @@ class Activity(sugar.activity.activity.Activity):
         self.box.set_show_tabs(False)
 
         self.splash = gtk.Image()
-        self.splash.set_from_file("images/splash_neko.png")
+        pixbuf = gtk.gdk.pixbuf_new_from_file("images/splash_neko.png")
+        screen = self.window.get_screen()
+        width, height = screen.get_width(), screen.get_height() - style.GRID_CELL_SIZE
+        pixbuf = pixbuf.scale_simple(width, height, gtk.gdk.INTERP_BILINEAR)
+        self.splash.set_from_pixbuf(pixbuf)
         self.splash.show()
         eb = gtk.EventBox()
         eb.add(self.splash)
@@ -73,15 +86,37 @@ class Activity(sugar.activity.activity.Activity):
 
         gobject.timeout_add(300, self.pump)
         gobject.timeout_add(2000, self.init_interpreter)
-        gobject.timeout_add(1000, self.build_editor)
+        #gobject.timeout_add(1000, self.build_editor)
+        gobject.timeout_add(1500, self.check_modified)
 
         self.build_toolbar()    
+        self.editor = None
+        #self.reader = None
         self._pygamecanvas.run_pygame(self.run_game)
 
     def redraw(self, widget=None, b=None, c=None):
         scene = spyral.director.get_scene()
         if scene:
             scene.redraw()
+
+    def alert(self, title=None, text=None, delay=5):
+        alert = NotifyAlert(delay)
+        alert.props.title = title
+        alert.props.msg = text
+        self.add_alert(alert)
+        alert.connect('response', self._alert_ok)
+        alert.show()
+
+    def _alert_ok(self, alert, *args):
+        self.remove_alert(alert)
+
+    def check_modified(self):
+        if self.box.current_page()==2:
+            if not self.save_button.get_sensitive():
+                if self.editor.modificado():
+                    self.save_button.set_sensitive(True)
+                    return False
+        return True
 
     def pump(self):
         # Esto es necesario porque sino pygame acumula demasiados eventos.
@@ -104,7 +139,12 @@ class Activity(sugar.activity.activity.Activity):
                 self.editor.open_file(widget, path)
 
     def save_file(self, widget):
-        self.editor.save_file()
+        if self.editor.modificado():
+            self.save_button.set_sensitive(False)
+            self.editor.save_file()
+            filename = self.editor.current_file()
+            self.alert(filename, "Archivo guardado.")
+            gobject.timeout_add(1500, self.check_modified)
 
     def build_editor(self):
         dir_real = os.getcwd()
@@ -145,6 +185,13 @@ class Activity(sugar.activity.activity.Activity):
         self.h.show()
         self.open_file(None, f)
 
+    def build_reader(self):
+        self.reader = webkit.WebView()
+        curdir = os.getcwd()
+        self.reader.load_uri("file://%s/docs/index.html" % curdir)
+        self.box.append_page(self.reader, gtk.Label("Lector"))
+        self.reader.show()
+
     def build_toolbar(self):
         toolbar_box = ToolbarBox()
         self.set_toolbar_box(toolbar_box)
@@ -175,6 +222,17 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(button, -1)
         button.show()
 
+        """ # Desactivado por no tener soporte en OLPC OS 13.2.0
+        button = RadioToolButton()
+        button.props.icon_name = 'read'
+        button.set_tooltip(_('Documentos'))
+        button.accelerator = "<Ctrl>3"
+        button.props.group = tool_group
+        button.connect('clicked', self.show_reader)
+        toolbar_box.toolbar.insert(button, -1)
+        button.show()
+        """ 
+
         separator = gtk.SeparatorToolItem()
         toolbar_box.toolbar.insert(separator, -1)
         separator.show()
@@ -190,6 +248,7 @@ class Activity(sugar.activity.activity.Activity):
         self.save_button.set_tooltip(_('Guardar'))
         self.save_button.accelerator = "<Ctrl>s"
         self.save_button.connect('clicked', self.save_file)
+        self.save_button.set_sensitive(False)
         toolbar_box.toolbar.insert(self.save_button, -1)
         self.save_button.show()
 
@@ -217,13 +276,31 @@ class Activity(sugar.activity.activity.Activity):
         self.game = JUEGO.Juego(self, callback=self.game_ready)
         self.box.connect("switch-page", self.redraw)
         spyral.director.push(self.game)
-        spyral.director.run(sugar = True)
+        self.start()
+
+    def start(self):
+        try:
+            spyral.director.run(sugar = True)
+        except AttributeError as detail:
+            detail2 = traceback.format_exc()
+            self.box.set_page(0)
+            self.alert( detail2, "Spyral se ha detenido abruptamente.", 60)
 
     def show_game(self, widget):
         self.box.set_page(1)
+        self.redraw()
 
     def show_editor(self, widget):
+        if not self.editor:
+            self.build_editor()
         self.box.set_page(2)
+        self.redraw()
+
+    def show_reader(self, widget):
+        if not self.reader:
+            self.build_reader()
+        self.box.set_page(3)
+        self.redraw()
 
     def restart_game(self, widget):
         global JUEGO
@@ -238,7 +315,7 @@ class Activity(sugar.activity.activity.Activity):
         JUEGO = reload(JUEGO)
         self.game = JUEGO.Juego(self, callback=self.game_ready)
         spyral.director.replace(self.game)
-        spyral.director.run(sugar = True)
+        self.start()
 
     def game_ready(self, widget = None):
         self.game_button.set_active(True)
@@ -253,10 +330,15 @@ class Activity(sugar.activity.activity.Activity):
         pass
 
     def can_close(self):
-        self.editor.close()
+        if self.editor:
+            self.editor.close()
         self.box.set_page(0)
-        pygame.quit()
-        return True
+        try:
+            spyral.director.quit()
+        except spyral.exceptions.GameEndException:
+            pass
+        finally:
+            return True
 
     def toggle_console(self, e):
         if self._interpreter.props.visible:
@@ -361,7 +443,6 @@ class VimSourceView(VimWrapper):
     def __init__(self, sock_id):
         VimWrapper.__init__(self,  vimExec = "/usr/bin/gvim")
 
-        print sock_id
         self.start(sock_id=sock_id)
         self.sendKeys(":set guioptions=M<CR>i")
         self.bufInfo.addEventHandler(self.event_handler)
@@ -370,6 +451,12 @@ class VimSourceView(VimWrapper):
         if path:
             if not os.path.isdir(path):
                 self.sendKeys(":e %s<CR>" % path)
+                if is_xo:
+                    self.fix_fonts()
+
+    def fix_fonts(self):
+        font = "Monospace\\ " + str(int(10/style.ZOOM_FACTOR))
+        self.sendKeys(":set guifont=%s<CR>" % font)
 
     def save_file(self):
         self.sendKeys(":w<CR>")
@@ -379,6 +466,13 @@ class VimSourceView(VimWrapper):
         if event=="killed":
             self.close()
 
+    def modificado(self):
+        return self.isBufferModified(-1)
+
+    def current_file(self):
+        cur_buf = self.getBufId()
+        filename = self.bufInfo.pathOfBufId(cur_buf)
+        return filename
 
 class SourceView(gtksourceview2.View):
     """
@@ -475,6 +569,12 @@ class SourceView(gtksourceview2.View):
 
                 buffer.set_modified(False)
                 self.control = os.path.getmtime(self.archivo)
+
+    def modificado(self):
+        return self.get_buffer().get_modified()
+
+    def current_file(self):
+        return os.path.realpath(self.archivo)
 
 def main():
     spyral.director.init((0,0), fullscreen = False, max_fps = 30)
