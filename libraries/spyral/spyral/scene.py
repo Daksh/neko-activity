@@ -115,8 +115,8 @@ class Scene(object):
         self._views = []
 
         # Loading default styles
-        self.load_style(spyral._get_spyral_path() +
-                        'resources/form_defaults.spys')
+        #self.load_style(spyral._get_spyral_path() +
+        #                'resources/form_defaults.spys')
 
     # Actor Handling
     def _register_actor(self, actor, greenlet):
