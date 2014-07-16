@@ -1,6 +1,6 @@
 [Activity]
 name = Neko
-activity_version = 3
+activity_version = 4
 bundle_id = org.somosazucar.Neko
 icon = pata
 exec = sugar-activity activity.Activity
