@@ -14,6 +14,7 @@ import spyral
 
 import logging
 import traceback
+import helpbutton
 
 from sugar.graphics import style
 from sugar.graphics.toolbarbox import ToolbarBox
@@ -38,6 +39,7 @@ except ImportError:
 from pango import FontDescription
 
 import game.neko
+import game.credits
 
 JUEGO=game.neko
 
@@ -48,7 +50,7 @@ class Activity(sugar.activity.activity.Activity):
     def __init__(self, handle):
         super(Activity, self).__init__(handle)
         self.paused = False
-        
+
         watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
         self.window.set_cursor(watch)
 
@@ -75,7 +77,7 @@ class Activity(sugar.activity.activity.Activity):
         self._pygamecanvas = sugargame2.canvas.PygameCanvas(self)
         self._pygamecanvas.set_flags(gtk.EXPAND)
         self._pygamecanvas.set_flags(gtk.FILL)
-       
+
         self.connect("visibility-notify-event", self.redraw)
         self._pygamecanvas.set_events(gtk.gdk.BUTTON_PRESS_MASK)
         self._pygamecanvas.connect("button-press-event", self._pygamecanvas.grab_focus)
@@ -89,7 +91,8 @@ class Activity(sugar.activity.activity.Activity):
         #gobject.timeout_add(1000, self.build_editor)
         gobject.timeout_add(1500, self.check_modified)
 
-        self.build_toolbar()    
+        self.build_toolbar()
+        self.credits = None
         self.editor = None
         #self.reader = None
         self._pygamecanvas.run_pygame(self.run_game)
@@ -164,7 +167,7 @@ class Activity(sugar.activity.activity.Activity):
             self.socket.show()
             self.h.pack2(self.socket)
             sock_id = str(self.socket.get_id())
-            self.editor = VimSourceView(sock_id) 
+            self.editor = VimSourceView(sock_id)
 
             if not self.editor.bufInfo.bufferList:
                 f = JUEGO.__file__
@@ -222,28 +225,6 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(button, -1)
         button.show()
 
-        """ # Desactivado por no tener soporte en OLPC OS 13.2.0
-        button = RadioToolButton()
-        button.props.icon_name = 'read'
-        button.set_tooltip(_('Documentos'))
-        button.accelerator = "<Ctrl>3"
-        button.props.group = tool_group
-        button.connect('clicked', self.show_reader)
-        toolbar_box.toolbar.insert(button, -1)
-        button.show()
-        """ 
-
-        separator = gtk.SeparatorToolItem()
-        toolbar_box.toolbar.insert(separator, -1)
-        separator.show()
-
-        self.editor_button = ToolButton('sources')
-        self.editor_button.set_tooltip(_('Consola'))
-        self.editor_button.accelerator = "<Ctrl>grave"
-        self.editor_button.connect('clicked', self.toggle_console)
-        toolbar_box.toolbar.insert(self.editor_button, -1)
-        self.editor_button.show()
-
         self.save_button = ToolButton('dialog-ok')
         self.save_button.set_tooltip(_('Guardar'))
         self.save_button.accelerator = "<Ctrl>s"
@@ -252,6 +233,10 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(self.save_button, -1)
         self.save_button.show()
 
+        separator = gtk.SeparatorToolItem()
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
+
         button = ToolButton('system-restart')
         button.set_tooltip(_('Reiniciar juego'))
         button.accelerator = "<Alt><Shift>r"
@@ -259,8 +244,30 @@ class Activity(sugar.activity.activity.Activity):
         toolbar_box.toolbar.insert(button, -1)
         button.show()
 
-        # Blank space (separator) and Stop button at the end:
+        self.editor_button = ToolButton('sources')
+        self.editor_button.set_tooltip(_('Consola'))
+        self.editor_button.accelerator = "<Ctrl>grave"
+        self.editor_button.connect('clicked', self.toggle_console)
+        toolbar_box.toolbar.insert(self.editor_button, -1)
+        self.editor_button.show()
 
+        separator = gtk.SeparatorToolItem()
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
+
+        button = helpbutton.HelpButton(self)
+        toolbar_box.toolbar.insert(button, -1)
+        button.show()
+
+        button = ToolButton()
+        button.props.icon_name = 'activity-about'
+        button.set_tooltip(_('Acerca de'))
+        button.accelerator = "<Ctrl>i"
+        button.connect('clicked', self.run_credits)
+        toolbar_box.toolbar.insert(button, -1)
+        button.show()
+
+        # Blank space (separator) and Stop button at the end:
         separator = gtk.SeparatorToolItem()
         separator.props.draw = False
         separator.set_expand(True)
@@ -277,6 +284,11 @@ class Activity(sugar.activity.activity.Activity):
         self.box.connect("switch-page", self.redraw)
         spyral.director.push(self.game)
         self.start()
+
+    def run_credits(self, widget):
+        if not (spyral.director.get_scene()==self.credits):
+            self.credits = game.credits.Creditos(self.game.size)
+            spyral.director.push(self.credits)
 
     def start(self):
         try:

@@ -6,8 +6,6 @@ import pygame
 from random import randint, random
 import math
 
-splash_done = False
-
 def cargar_frases():
     archivo = open("frases_miau.txt", "r")
     frases = archivo.read().decode("utf-8").splitlines()
@@ -28,7 +26,7 @@ class RetroTexto(spyral.Sprite):
         self.line_height = self.font.linesize
         self.margen = 50
 
-        self.miau = pygame.mixer.Sound("sounds/sonido_miau.wav")
+        self.miau = pygame.mixer.Sound("sounds/kipshu__prrmeow.wav")
         self.miau.play()
 
         texto = sabiduria[self.count]
@@ -341,34 +339,6 @@ class Juego(spyral.Scene):
 
         spyral.event.register("system.quit", spyral.director.pop)
 
-        self.taller = spyral.Sprite(self)
-        self.taller.layer = "frente"
-        self.taller.image = spyral.Image(filename="images/logo_labs.png")
-        self.taller.pos = (self.width - self.taller.width, self.height-30)
-        self.taller.scale = 1.3
-        self.taller.anchor = "midbottom"
-
-        self.taller2 = spyral.Sprite(self)
-        self.taller2.layer = "frente"
-        self.taller2.image = spyral.Image(filename="images/transformando.png")
-        self.taller2.pos = (self.taller2.width/2, self.height-self.taller.image.height)
-        self.taller2.anchor = "center"
-
-        spyral.event.register("director.scene.enter", self.blink)
-
         # le avisamos a la actividad que terminamos de cargar el juego
         if callback:
             callback()
-
-    def blink(self):
-        global splash_done
-        if not splash_done:
-            delay = spyral.DelayAnimation(5)
-            moveout = spyral.Animation("y", spyral.easing.Linear(self.taller.y, self.height
-                                                                    + self.taller.height), duration=4)
-            self.taller.animate(delay + moveout)
-            moveout = spyral.Animation("y", spyral.easing.Linear(self.taller2.y, self.height 
-                                                                    + self.taller.height/2), duration=5)
-            self.taller2.animate(delay+moveout)
-            splash_done = True
-
