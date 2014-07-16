@@ -34,7 +34,7 @@ class Creditos(spyral.Scene):
                 MultiTexto(self, u"Marco tipográfico francés de 1890, dominio público."),
                 MultiTexto(self, u"<http://thegraphicsfairy.com/vintage-images-french-frames/>", style="small"),
                 Espacio(self),
-                MultiTexto(self, u"Icono de gato por Martin LEBRETON, the Noun Project, CC-BY 3.0"),
+                MultiTexto(self, u"Icono de gato por Martin Lebreton, the Noun Project, CC-BY 3.0"),
                 MultiTexto(self, u"<http://thenounproject.com/term/cat/18061/>", style="small"),
                 Espacio(self), 
                 MultiTexto(self, u"Icono de garrita por Ben Hsu, the Noun Project, CC-BY 3.0"),
