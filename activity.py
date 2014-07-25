@@ -68,34 +68,39 @@ class Activity(sugar.activity.activity.Activity):
         pixbuf = pixbuf.scale_simple(width, height, gtk.gdk.INTERP_BILINEAR)
         self.splash.set_from_pixbuf(pixbuf)
         self.splash.show()
+
         eb = gtk.EventBox()
         eb.add(self.splash)
         eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
         eb.show()
         self.box.append_page(eb, gtk.Label("Inicio"))
 
-        self._pygamecanvas = sugargame2.canvas.PygameCanvas(self)
-        self._pygamecanvas.set_flags(gtk.EXPAND)
-        self._pygamecanvas.set_flags(gtk.FILL)
+        def tras_splash():
+            self._pygamecanvas = sugargame2.canvas.PygameCanvas(self)
+            self._pygamecanvas.set_flags(gtk.EXPAND)
+            self._pygamecanvas.set_flags(gtk.FILL)
 
-        self.connect("visibility-notify-event", self.redraw)
-        self._pygamecanvas.set_events(gtk.gdk.BUTTON_PRESS_MASK)
-        self._pygamecanvas.connect("button-press-event", self._pygamecanvas.grab_focus)
-        self.box.append_page(self._pygamecanvas, gtk.Label("Juego"))
+            self.connect("visibility-notify-event", self.redraw)
+            self._pygamecanvas.set_events(gtk.gdk.BUTTON_PRESS_MASK)
+            self._pygamecanvas.connect("button-press-event", self._pygamecanvas.grab_focus)
+            self.box.append_page(self._pygamecanvas, gtk.Label("Juego"))
 
-        self.box.show()
-        self.set_canvas(self.p)
+            gobject.timeout_add(300, self.pump)
+            gobject.timeout_add(2000, self.init_interpreter)
+            #gobject.timeout_add(1000, self.build_editor)
+            gobject.timeout_add(1500, self.check_modified)
 
-        gobject.timeout_add(300, self.pump)
-        gobject.timeout_add(2000, self.init_interpreter)
-        #gobject.timeout_add(1000, self.build_editor)
-        gobject.timeout_add(1500, self.check_modified)
+            self._pygamecanvas.run_pygame(self.run_game)
+
+        gobject.timeout_add(5000, tras_splash)
 
         self.build_toolbar()
         self.credits = None
         self.editor = None
         #self.reader = None
-        self._pygamecanvas.run_pygame(self.run_game)
+        self.box.show()
+        self.set_canvas(self.p)
+
 
     def redraw(self, widget=None, b=None, c=None):
         scene = spyral.director.get_scene()
@@ -324,6 +329,8 @@ class Activity(sugar.activity.activity.Activity):
         self.box.set_page(0)
         watch = gtk.gdk.Cursor(gtk.gdk.WATCH)
         self.window.set_cursor(watch)
+        self.game
+        JUEGO.stop_music()
         JUEGO = reload(JUEGO)
         self.game = JUEGO.Juego(self, callback=self.game_ready)
         spyral.director.replace(self.game)

@@ -1,6 +1,6 @@
 [Activity]
-name = Neko
-activity_version = 4
-bundle_id = org.somosazucar.Neko
-icon = pata
+name = Neko Arcoíris
+activity_version = 1
+bundle_id = org.somosazucar.NekoArcoirisTest
+icon = pata-test
 exec = sugar-activity activity.Activity
