@@ -108,7 +108,7 @@ class Activity(sugar3.activity.activity.Activity):
         self.remove_alert(alert)
 
     def check_modified(self):
-        if self.box.get_current_page()==2:
+        if self.box.get_current_page() == 2:
             if not self.save_button.get_sensitive():
                 if self.editor.modificado():
                     self.save_button.set_sensitive(True)
@@ -555,7 +555,7 @@ class SourceView(GtkSource.View):
 
         pos = self.get_iter_at_location(1,1)
         self.get_buffer().place_cursor(pos)
-        self.scroll_to_iter(pos, False)
+        self.scroll_to_iter(pos, 0, False, 0, 0)
 
         self.grab_focus()
         self.init_syntax()

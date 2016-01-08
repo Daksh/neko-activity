@@ -170,27 +170,14 @@ class GTKInterpreterConsole(Gtk.ScrolledWindow):
     self.mark = self.text.get_buffer().create_mark("End",self.text.get_buffer().get_end_iter(), False )
 
             #setup colors
-    tagforstylebanner = self.style_banner.create_tag("banner", foreground="saddle brown")
-    self.style_banner.apply_tag(tagforstylebanner, start_iter, end_iter)
+    self.style_banner = self.text.get_buffer().create_tag("banner", foreground="saddle brown")
 
-    self.style_banner = Gtk.TextTag("banner")
-    self.style_banner.set_property( "foreground", "saddle brown" )
+    self.style_ps1 = self.text.get_buffer().create_tag("ps1", foreground="DarkOrchid4", editable=False, font="courier")
 
-    self.style_ps1 = Gtk.TextTag("ps1")
-    self.style_ps1.set_property( "foreground", "DarkOrchid4" )
-    self.style_ps1.set_property( "editable", False )
-    self.style_ps1.set_property("font", "courier" )
+    self.style_ps2 = self.text.get_buffer().create_tag("ps2", foreground="DarkOliveGreen", editable=False, font="courier")
 
-    self.style_ps2 = Gtk.TextTag("ps2")
-    self.style_ps2.set_property( "foreground", "DarkOliveGreen" )
-    self.style_ps2.set_property( "editable", False  )
-    self.style_ps2.set_property("font", "courier" )
-
-    self.style_out = Gtk.TextTag("stdout")
-    self.style_out.set_property( "foreground", "midnight blue" )
-    self.style_err = Gtk.TextTag("stderr")
-    self.style_err.set_property( "style", Pango.Style.ITALIC )
-    self.style_err.set_property( "foreground", "red" )
+    self.style_out = self.text.get_buffer().create_tag("stdout", foreground="midnight blue")
+    self.style_err = self.text.get_buffer().create_tag("stderr", style=Pango.Style.ITALIC, foreground="red")
 
     self.text.get_buffer().get_tag_table().add(self.style_banner)
     self.text.get_buffer().get_tag_table().add(self.style_ps1)
