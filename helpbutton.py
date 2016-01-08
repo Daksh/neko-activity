@@ -23,6 +23,7 @@ from gettext import gettext as _
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GObject
 
 from sugar3.graphics.toolbutton import ToolButton
 from sugar3.graphics.icon import Icon

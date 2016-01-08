@@ -1,4 +1,5 @@
 from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import GObject
 import pygame
 import pygame.event 
@@ -75,8 +76,10 @@ class Translator(object):
             Gdk.EventMask.BUTTON_RELEASE_MASK
         )
 
-        self._mainwindow.set_flags(Gtk.CAN_FOCUS)
-        self._inner_evb.set_flags(Gtk.CAN_FOCUS)
+        #self._mainwindow.set_flags(Gtk.CAN_FOCUS) #might have to FIXME
+        self._mainwindow.set_property('can-focus', True)
+        #self._inner_evb.set_flags(Gtk.CAN_FOCUS)
+        self._inner_evb.set_property('can-focus', True)
         
         # Callback functions to link the event systems
         self._mainwindow.connect('unrealize', self._quit_cb)
@@ -86,7 +89,7 @@ class Translator(object):
         self._inner_evb.connect('button_press_event', self._mousedown_cb)
         self._inner_evb.connect('button_release_event', self._mouseup_cb)
         self._inner_evb.connect('motion-notify-event', self._mousemove_cb)
-        self._inner_evb.connect('expose-event', self._expose_cb)
+        self._inner_evb.connect('draw', self._expose_cb)
         self._inner_evb.connect('configure-event', self._resize_cb)
         self._inner_evb.connect('screen-changed', self._screen_changed_cb)
         
@@ -221,7 +224,8 @@ class Translator(object):
         # if this is a hint, then let's get all the necessary 
         # information, if not it's all we need.
         if event.is_hint:
-            x, y, state = event.window.get_pointer()
+            x, y, state = event.get_window().get_pointer()
+            #x, y, state = event.window.get_pointer()
         else:
             x = event.x
             y = event.y

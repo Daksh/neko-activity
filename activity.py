@@ -5,6 +5,7 @@ from gettext import gettext as _
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
+from gi.repository import GdkPixbuf
 import pygame
 import sugar3.activity.activity
 import libraries
@@ -56,7 +57,7 @@ class Activity(sugar3.activity.activity.Activity):
 
         self.splash = Gtk.Image()
         pixbuf = GdkPixbuf.Pixbuf.new_from_file("images/splash_neko.png")
-        screen = self.window.get_screen()
+        screen = self.get_window().get_screen()
         width, height = screen.get_width(), screen.get_height() - style.GRID_CELL_SIZE
         pixbuf = pixbuf.scale_simple(width, height, GdkPixbuf.InterpType.BILINEAR)
         self.splash.set_from_pixbuf(pixbuf)
@@ -68,8 +69,8 @@ class Activity(sugar3.activity.activity.Activity):
         self.box.append_page(eb, Gtk.Label(label="Inicio"))
 
         self._pygamecanvas = sugargame2.canvas.PygameCanvas(self)
-        self._pygamecanvas.set_flags(Gtk.AttachOptions.EXPAND)
-        self._pygamecanvas.set_flags(Gtk.AttachOptions.FILL)
+        #self._pygamecanvas.set_flags(Gtk.AttachOptions.EXPAND) #FIXME
+        #self._pygamecanvas.set_flags(Gtk.AttachOptions.FILL) #FIXME
 
         self.connect("visibility-notify-event", self.redraw)
         self._pygamecanvas.set_events(Gdk.EventMask.BUTTON_PRESS_MASK)
@@ -316,7 +317,7 @@ class Activity(sugar3.activity.activity.Activity):
             pass
         self.box.set_page(0)
         watch = Gdk.Cursor.new(Gdk.CursorType.WATCH)
-        self.window.set_cursor(watch)
+        self.get_window().set_cursor(watch)
         JUEGO = reload(JUEGO)
         self.game = JUEGO.Juego(self, callback=self.game_ready)
         spyral.director.replace(self.game)
@@ -326,7 +327,7 @@ class Activity(sugar3.activity.activity.Activity):
         self.game_button.set_active(True)
         self.box.set_page(1)
         self._pygamecanvas.grab_focus()
-        self.window.set_cursor(None)
+        self.get_window().set_cursor(None)
 
     def read_file(self, file_path):
         pass
