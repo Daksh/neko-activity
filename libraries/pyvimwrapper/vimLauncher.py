@@ -57,8 +57,8 @@ class VimLauncher:
             raise Exception( 'Can not find vim executable !\n' )
 
         if self.sock_id:
-            #argsSockId = [ "--socketid", self.sock_id, "-U", "NONE", "-u", "NONE", "-S", "sugar.vim" ]
-            argsSockId = [ "--socketid", self.sock_id, "-S", "sugar.vim" ]
+            #argsSockId = [ "--socketid", self.sock_id, "-U", "NONE", "-u", "NONE", "-S", "sugar3.vim" ]
+            argsSockId = [ "--socketid", self.sock_id, "-S", "sugar3.vim" ]
         else:
             argsSockId = []
 

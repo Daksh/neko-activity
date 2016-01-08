@@ -17,7 +17,7 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
-# This file is based on the bundlebuilder.py from sugar.activity
+# This file is based on the bundlebuilder.py from sugar3.activity
 # It is to be used so that most of the features of bundlebuilder.py can happen
 # outside of a sugar environment
 
@@ -325,7 +325,7 @@ def start(bundle_name=None):
 
 if __name__ == "__main__":
     try:
-        from sugar.activity import bundlebuilder
+        from sugar3.activity import bundlebuilder
         bundlebuilder.start()
     except ImportError:
         start()

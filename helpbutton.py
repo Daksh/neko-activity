@@ -21,36 +21,37 @@
 
 from gettext import gettext as _
 
-import gtk
+from gi.repository import Gtk
+from gi.repository import Gdk
 
-from sugar.graphics.toolbutton import ToolButton
-from sugar.graphics.icon import Icon
-from sugar.graphics import style
+from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.icon import Icon
+from sugar3.graphics import style
 
 import logging
 
 ''' Set up a help palette for the main toolbars '''
 help_palettes = {}
 help_windows = {}
-help_box = gtk.VBox()
+help_box = Gtk.VBox()
 help_box.set_homogeneous(False)
 help_palettes['main-toolbar'] = help_box
-help_windows['main-toolbar'] = gtk.ScrolledWindow()
+help_windows['main-toolbar'] = Gtk.ScrolledWindow()
 help_windows['main-toolbar'].set_size_request(
-    int(gtk.gdk.screen_width() / 3),
-    gtk.gdk.screen_height() - style.GRID_CELL_SIZE * 5)
+    int(Gdk.Screen.width() / 3),
+    Gdk.Screen.height() - style.GRID_CELL_SIZE * 5)
 help_windows['main-toolbar'].set_policy(
-    gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+    Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 help_windows['main-toolbar'].add_with_viewport(
     help_palettes['main-toolbar'])
 help_palettes['main-toolbar'].show()
 
-class HelpButton(gtk.ToolItem):
+class HelpButton(Gtk.ToolItem):
 
     def __init__(self, activity):
         self._activity = activity
 
-        gtk.ToolItem.__init__(self)
+        GObject.GObject.__init__(self)
 
         help_button = ToolButton('toolbar-help')
         help_button.set_tooltip(_('Ayuda'))
@@ -74,9 +75,9 @@ class HelpButton(gtk.ToolItem):
 def add_section(help_box, section_text, icon=None):
     ''' Add a section to the help palette. From helpbutton.py by
     Gonzalo Odiard '''
-    max_text_width = int(gtk.gdk.screen_width() / 3) - 20
-    hbox = gtk.HBox()
-    label = gtk.Label()
+    max_text_width = int(Gdk.Screen.width() / 3) - 20
+    hbox = Gtk.HBox()
+    label = Gtk.Label()
     label.set_use_markup(True)
     label.set_markup('<b>%s</b>' % section_text)
     label.set_line_wrap(True)
@@ -96,10 +97,10 @@ def add_section(help_box, section_text, icon=None):
 def add_paragraph(help_box, text, icon=None):
     ''' Add an entry to the help palette. From helpbutton.py by
     Gonzalo Odiard '''
-    max_text_width = int(gtk.gdk.screen_width() / 3) - 20
-    hbox = gtk.HBox()
-    label = gtk.Label(text)
-    label.set_justify(gtk.JUSTIFY_LEFT)
+    max_text_width = int(Gdk.Screen.width() / 3) - 20
+    hbox = Gtk.HBox()
+    label = Gtk.Label(label=text)
+    label.set_justify(Gtk.Justification.LEFT)
     label.set_line_wrap(True)
     hbox.add(label)
     if icon is not None:
