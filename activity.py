@@ -9,8 +9,8 @@ import pygame
 import sugar3.activity.activity
 import libraries
 libraries.setup_path()
-#import sugar3game2
-#import sugar3game2.canvas
+import sugargame2
+import sugargame2.canvas
 import spyral
 
 import logging
@@ -45,7 +45,7 @@ class Activity(sugar3.activity.activity.Activity):
         self.paused = False
 
         watch = Gdk.Cursor.new(Gdk.CursorType.WATCH)
-        self.window.set_cursor(watch)
+        self.get_window().set_cursor(watch)
 
         self.p = Gtk.VPaned()
         self.p.connect("notify::position", self.redraw)
