@@ -30,7 +30,7 @@ from libraries.console.interactiveconsole import GTKInterpreterConsole
 from libraries.pyvimwrapper.vimWrapper import VimWrapper
 from gi.repository import GtkSource
 
-from pango import FontDescription
+from gi.repository.Pango import FontDescription
 
 import game.neko
 import game.credits
@@ -108,7 +108,7 @@ class Activity(sugar3.activity.activity.Activity):
         self.remove_alert(alert)
 
     def check_modified(self):
-        if self.box.current_page()==2:
+        if self.box.get_current_page()==2:
             if not self.save_button.get_sensitive():
                 if self.editor.modificado():
                     self.save_button.set_sensitive(True)
@@ -289,23 +289,23 @@ class Activity(sugar3.activity.activity.Activity):
             spyral.director.run(sugar = True)
         except AttributeError as detail:
             detail2 = traceback.format_exc()
-            self.box.set_page(0)
+            self.box.set_current_page(0)
             self.alert( detail2, "Spyral se ha detenido abruptamente.", 60)
 
     def show_game(self, widget):
-        self.box.set_page(1)
+        self.box.set_current_page(1)
         self.redraw()
 
     def show_editor(self, widget):
         if not self.editor:
             self.build_editor()
-        self.box.set_page(2)
+        self.box.set_current_page(2)
         self.redraw()
 
     def show_reader(self, widget):
         if not self.reader:
             self.build_reader()
-        self.box.set_page(3)
+        self.box.set_current_page(3)
         self.redraw()
 
     def restart_game(self, widget):
@@ -315,7 +315,7 @@ class Activity(sugar3.activity.activity.Activity):
             objetos.reset()
         except AttributeError:
             pass
-        self.box.set_page(0)
+        self.box.set_current_page(0)
         watch = Gdk.Cursor.new(Gdk.CursorType.WATCH)
         self.get_window().set_cursor(watch)
         JUEGO = reload(JUEGO)
@@ -325,7 +325,7 @@ class Activity(sugar3.activity.activity.Activity):
 
     def game_ready(self, widget = None):
         self.game_button.set_active(True)
-        self.box.set_page(1)
+        self.box.set_current_page(1)
         self._pygamecanvas.grab_focus()
         self.get_window().set_cursor(None)
 
@@ -338,7 +338,7 @@ class Activity(sugar3.activity.activity.Activity):
     def can_close(self):
         if self.editor:
             self.editor.close()
-        self.box.set_page(0)
+        self.box.set_current_page(0)
         try:
             spyral.director.quit()
         except spyral.exceptions.GameEndException:

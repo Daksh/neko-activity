@@ -170,6 +170,9 @@ class GTKInterpreterConsole(Gtk.ScrolledWindow):
     self.mark = self.text.get_buffer().create_mark("End",self.text.get_buffer().get_end_iter(), False )
 
             #setup colors
+    tagforstylebanner = self.style_banner.create_tag("banner", foreground="saddle brown")
+    self.style_banner.apply_tag(tagforstylebanner, start_iter, end_iter)
+
     self.style_banner = Gtk.TextTag("banner")
     self.style_banner.set_property( "foreground", "saddle brown" )
 
